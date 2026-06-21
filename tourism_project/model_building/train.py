@@ -25,7 +25,6 @@ mlflow.set_tracking_uri("file:./mlruns")
 mlflow.set_experiment("Wellness-Tourism-Package-Prediction-Experiment")
 
 # Set your Hugging Face Token
-os.environ["HF_TOKEN"] = "" # Removed hardcoded token
 HF_TOKEN = os.getenv("HF_TOKEN")
 
 api = HfApi(token=HF_TOKEN)
@@ -91,7 +90,7 @@ param_grid = {
     'xgb__subsample': [0.7, 1.0]
 }
 
-# 10. Use model pipeline to preprocess the data and build the model using the base model above
+# 10. Use model pipeline to preprocess the data and build the model
 pipeline = Pipeline(steps=[
     ('preprocessor', preprocessor),
     ('xgb', xgb_model)
@@ -148,25 +147,11 @@ with mlflow.start_run():
     joblib.dump(best_model, model_filename)
     print(f"Model saved locally as {model_filename}")
 
-    # Define trusted types for skops.io to prevent MlflowException
-    skops_trusted_types = [
-        'numpy.dtype',
-        'sklearn.compose._column_transformer._RemainderColsList',
-        'xgboost.core.Booster',
-        'xgboost.sklearn.XGBClassifier',
-        'sklearn.preprocessing._data.StandardScaler',
-        'sklearn.preprocessing._encoders.OneHotEncoder',
-        'sklearn.impute._base.SimpleImputer',
-        'sklearn.pipeline.Pipeline',
-        'sklearn.compose._column_transformer.ColumnTransformer'
-    ]
-
     # Log the model with MLflow
     mlflow.sklearn.log_model(
         sk_model=best_model,
         artifact_path="sklearn_model",
-        registered_model_name="XGBoostWellnessPackagePredictor",
-        skops_trusted_types=skops_trusted_types
+        registered_model_name="XGBoostWellnessPackagePredictor"
     )
     print("Model logged to MLflow.")
 
