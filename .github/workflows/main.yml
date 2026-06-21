@@ -1,0 +1,80 @@
+
+name: Tourism Project Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Automatically triggers on push to the main branch
+
+jobs:
+
+  register-dataset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install Dependencies
+        run: |
+          pip install pandas==2.2.2 huggingface_hub==0.32.6 scikit-learn==1.6.0 mlflow==2.14.0
+      - name: Upload Dataset to Hugging Face Hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python tourism_project/model_building/data_register.py
+
+  data-prep:
+    needs: register-dataset
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install Dependencies
+        run: |
+          pip install pandas==2.2.2 huggingface_hub==0.32.6 scikit-learn==1.6.0
+      - name: Run Data Preparation
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python tourism_project/model_building/prep.py
+
+  model-training:
+    needs: data-prep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install Dependencies
+        run: |
+          pip install pandas==2.2.2 huggingface_hub==0.32.6 joblib==1.5.1 scikit-learn==1.6.0 xgboost==2.1.4 mlflow==2.14.0 numpy
+      - name: Model Building
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python tourism_project/model_building/train.py
+
+  deploy-hosting:
+    needs: [model-training, data-prep, register-dataset]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install Dependencies
+        run: |
+          pip install pandas==2.2.2 huggingface_hub==0.32.6 streamlit==1.43.2 joblib==1.5.1 scikit-learn==1.6.0 xgboost==2.1.4 mlflow==2.14.0 numpy
+      - name: Push files to Frontend Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python tourism_project/hosting/hosting.py
