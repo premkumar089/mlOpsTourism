@@ -26,7 +26,7 @@ except HfHubHTTPError as e:
     exit()
 
 # Upload the local data folder to the Hugging Face dataset repository
-DATA_FOLDER_PATH = "/content/drive/My Drive/GL Course/MLOps/tourism_project/data"
+DATA_FOLDER_PATH = "tourism_project/data" # Changed to relative path
 
 try:
     api.upload_folder(
