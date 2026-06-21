@@ -25,7 +25,7 @@ mlflow.set_tracking_uri("file:./mlruns")
 mlflow.set_experiment("Wellness-Tourism-Package-Prediction-Experiment")
 
 # Set your Hugging Face Token
-os.environ["HF_TOKEN"] = "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" # Replace with your actual token
+os.environ["HF_TOKEN"] = "" # Removed hardcoded token
 HF_TOKEN = os.getenv("HF_TOKEN")
 
 api = HfApi(token=HF_TOKEN)
@@ -91,7 +91,7 @@ param_grid = {
     'xgb__subsample': [0.7, 1.0]
 }
 
-# 10. Use model pipeline to preprocess the data and build the model
+# 10. Use model pipeline to preprocess the data and build the model using the base model above
 pipeline = Pipeline(steps=[
     ('preprocessor', preprocessor),
     ('xgb', xgb_model)
@@ -102,7 +102,7 @@ with mlflow.start_run():
     print("MLflow Run started...")
     # 11. Initialize the Grid Search CV
     grid_search = GridSearchCV(pipeline, param_grid, cv=3, scoring='f1', n_jobs=-1, verbose=2)
-    
+
     # 12. Build the model using Grid Search CV
     grid_search.fit(X_train, y_train)
     print("Grid Search CV fitting complete.")
@@ -142,7 +142,7 @@ with mlflow.start_run():
         "test_f1": test_f1
     })
     print("Logged evaluation metrics.")
-    
+
     # 18. Save the model
     model_filename = "best_model.joblib"
     joblib.dump(best_model, model_filename)
@@ -201,5 +201,3 @@ with mlflow.start_run():
         print("Please check your HF_TOKEN and ensure the repository ID is correct.")
 
 print("Train.py script execution complete.")
-
-# Small non-breaking change to trigger workflow
